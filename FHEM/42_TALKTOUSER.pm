@@ -24,7 +24,7 @@
 #
 # Version History:
 # 2015-11-10 - UW - Started Development
-# 2014-12-30 - UW - Initial Version for FHEM Forum
+# 2016-06-21 - UW - Initial Version for FHEM Forum
 #
 ##############################################################################
 
@@ -48,7 +48,7 @@ sub TALKTOUSER_Initialize($) {
 	$hash->{ParseFn}     = "TALKTOUSER_Parse";
     $hash->{UndefFn}     = "TALKTOUSER_Undefine";
 	$hash->{AttrFn}      = "TALKTOUSER_Attr";
-    $hash->{AttrList}    = "IODev disable:0,1 realname nomatch noreply monitoredReadings allowedDevices allowedReadings " . $readingFnAttributes;
+    $hash->{AttrList}    = "IODev disable:0,1 realname nomatch noreply " . $readingFnAttributes;
 }
 
 ###################################
@@ -93,47 +93,6 @@ sub TALKTOUSER_Define($$) {
 }
 
 ###################################
-# TODO: REMOVE
-sub TALKTOUSER_Attr_monitoredReadingsParser {
-	my ($name,$aVal) = @_;
-	
-	my $hash = $modules{TALKTOUSER}{defptr}{$name};
-	
-	Log3 $name, 4, "TALKTOUSER $name: called function TALKTOUSER_Attr_monitoredReadingsParser()";
-	
-	my %monitoredReadings;
-	
-	# This codesections is copied and adapted from 01_FHEMWEB.pm - thank you!
-	Log3 $name, 4, "TALKTOUSER $name: aVal = $aVal";
-	foreach my $devicegroup (split(" ", $aVal)) {
-		my ($device, $groupreading)=split(":",$devicegroup,2);
-		# Get rid of spaces in HTML Format
-		$device =~ s/%20/ /g;
-		Log3 $name, 4, "TALKTOUSER $name: device = $device";
-		if(!defined($groupreading)) {
-			# Push an error
-			Log3 $name, 4, "TALKTOUSER $name: Wrong attribute format.";
-			return "Wrong attribute format. Correct example: attr talktomedevice monitoredReadings device1:reading1 device2:reading2 device3:reading3|reading4"
-		}
-		# Now split the readings
-		
-		Log3 $name, 4, "TALKTOUSER $name: groupreading = $groupreading";
-		my @results;
-		foreach my $reading (split(/\|/,$groupreading)) {
-			# Get rid of spaces in HTML Format
-			$reading =~ s/%20/ /g;
-			Log3 $name, 4, "TALKTOUSER $name: reading = $reading";
-			push @results, $reading;
-		}
-		$monitoredReadings{$device} = \@results;
-	}
-	
-	$hash->{helper}{monitoredReadings} = \%monitoredReadings;
-	
-	return "SUCCESS";
-}
-
-###################################
 sub TALKTOUSER_Attr(@)
 {
 	my ($cmd,$name,$aName,$aVal) = @_;
@@ -142,14 +101,7 @@ sub TALKTOUSER_Attr(@)
 	# $name is device name
 	# aName and aVal are Attribute name and value
 	if ($cmd eq "set") {
-		if ($aName eq "monitoredReadings") {
-			my $returnmessage = TALKTOUSER_Attr_monitoredReadingsParser($name, $aVal);
-			if ("SUCCESS" ne $returnmessage) {
-				my $errormessage = "You typed 'attr $name $aName $aVal', but this seems to have caused problems: $returnmessage";
-				Log3 $name, 3, $errormessage;
-				return $errormessage;
-			}
-		} elsif ($aName eq "disable") {
+		if ($aName eq "disable") {
 			if ($aVal ne "0") {
 				readingsSingleUpdate ($hash,  "state", "disabled", 1);
 			} else {
@@ -184,8 +136,6 @@ sub TALKTOUSER_Notify($$) {
     my ( $hash, $dev ) = @_;
     my $devName  = $dev->{NAME};
     my $name = $hash->{NAME};
-	
-	return undef if($devName ne 'TC_TELEGRAMBOT_SUSI');
 	
 	Log3 $name, 5, "TALKTOUSER $name: called function TALKTOUSER_Notify()";
 	
@@ -507,7 +457,6 @@ sub TALKTOUSER_Parse($$$) {
       <div style="margin-left: 2em">
         <code>attr &lt;name&gt; &lt;attribute&gt; [&lt;parameter&gt;]</code><br>
         <ul>
-		  <li><b>monitoredReadings</b> &nbsp;&nbsp;-&nbsp;&nbsp; Configures the devices where the TALKTOUSER device reacts upon. Devices are configured with DEVICENAME:READING and seperated by space. Multiple readings are separated by "|". Example: <code>attr MYTALKTOUSERDEVICE monitoredReadings DEVICE1:message|messages DEVICE2:messages</code></li>
           <li><b>nomatch</b> &nbsp;&nbsp;-&nbsp;&nbsp; Defines the reply which is given when no match was found</li>
 		  <li><b>noreply</b> &nbsp;&nbsp;-&nbsp;&nbsp; Defines the reply which is given when no replay was found</li>
 		  <li><b>realname</b> &nbsp;&nbsp;-&nbsp;&nbsp; Rivescript can react to the user with a personalized answer. The configured value is taken as the username for such replies and can be used using <code>&lt;id&gt;</code> in the Rivescript brain file (<a href="https://www.rivescript.com/docs/tutorial#tags">See Rivescript Tutorial</a>)</li>

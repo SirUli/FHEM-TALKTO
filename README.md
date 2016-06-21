@@ -5,6 +5,10 @@ TALKTOME and TALKTOUSERS are fhem modules for interactive conversations with FHE
 The Perl module can be loaded directly into your FHEM installation. For this please copy the below command into the FHEM command line.
 
 	update all https://raw.githubusercontent.com/SirUli/FHEM-TALKTO/master/controls_talkto.txt
+
+### Rename Template
+
+Rename the file FHEM/TALKTOME.rive.template to FHEM/TALKTOME.rive and edit if you like
 	
 ### Create ONE device as master (this is the chatbot)
 	

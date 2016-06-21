@@ -24,7 +24,7 @@
 #
 # Version History:
 # 2015-11-10 - UW - Started Development
-# 2014-12-30 - UW - Initial Version for FHEM Forum
+# 2016-06-21 - UW - Initial Version for FHEM Forum
 #
 ##############################################################################
 
