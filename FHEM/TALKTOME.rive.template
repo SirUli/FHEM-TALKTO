@@ -1,0 +1,208 @@
+// Bot Variables
+! var name     = SuSi
+! var age      = 42
+! var gender   = androgynous
+! var location = Raspberry PI
+
+! person ich bin = du bist
+! person du bist = ich bin
+! person mein    = dein
+! person dein    = mein
+! person du      = ich
+! person ich     = du
+
+! sub &quot;    = "
+! sub &apos;    = '
+! sub &amp;     = &
+! sub &lt;      = <
+! sub &gt;      = >
+! sub +         = plus
+! sub -         = minus
+! sub /         = geteilt
+! sub *         = mal
+! sub hat's     = hat es
+! sub macht's   = macht es
+! sub brb       = be right back
+! sub :-)       = lächeln
+! sub ☺         = lächeln
+! sub :)        = lächeln
+! sub 😀         = grinsen
+! sub :-d       = grinsen
+! sub :d        = grinsen
+! sub :-p       = zunge
+! sub :p        = zunge
+! sub 😉        = zwinkern
+! sub ;-)       = zwinkern
+! sub ;)        = zwinkern
+! sub :-(       = traurig
+! sub :(        = traurig
+! sub :'(       = weinen
+! sub :-[       = schüchtern
+! sub :-\       = unsicher
+! sub :-/       = unsicher
+! sub :-s       = unsicher
+! sub 8-)       = cool
+! sub 8)        = cool
+! sub :-*       = kussgesicht
+! sub :-!       = fuss
+! sub o:-)      = engel
+! sub >:o       = wütend
+! sub :@        = wütend
+! sub 8o|       = wütend
+! sub :$        = erröten
+! sub :-$       = erröten
+! sub :-[       = erröten
+! sub :[        = fledermaus
+! sub (a)       = engel
+! sub (h)       = cool
+! sub 8-|       = nerdig
+! sub |-)       = müde
+! sub +o(       = krank
+! sub *-)       = unsicher
+! sub ^o)       = hochgezogene augenbraue
+! sub (6)       = teufel
+! sub (l)       = liebe
+! sub (u)       = gebrochenes herz
+! sub (k)       = kussgesicht
+! sub (f)       = rose
+! sub (w)       = verwelkte rose
+
++ *
+- Sorry, ich habe das nicht verstanden. Ein paar Beispiele für Kommandos:
+^ "Wie warm ist es in der Küche?"
+^ "Wie ist das Wetter heute?"
+
+/*****************************************************************************\
+ * Bot Details                                                                *
+\*****************************************************************************/
+
++ hallo bot
+- Hallo Mensch, mein Name ist <bot name>
+
++ wie (heisst du|ist dein name)
+- Du kannst mich <bot name> nennen
+
++ wie alt bist du
+- Ich bin schon <bot age> Jahre alt
+
++ wo wohnst du
+- Ich wohne in: <bot location>
+
++ welches geschlecht hast du
+- Ich bin <bot gender>
+
+/*****************************************************************************\
+ * Just 4 fun                                                                 *
+\*****************************************************************************/
++ google *
+- Google Suche: http://google.de/search?q=<star>
+
++ <reply>
+- Willst du mich aergern?
+
++ wie (heisse|heiße) ich
+* <id> == undefined => Keine Ahnung, hast du mir nie gesagt...
+- Du heisst <id>, schon vergessen?
+- Klingelt es mit <id> bei dir?
+
++ (mein name ist|ich heisse|ich heiße) *
+* {lowercase}<id>{/lowercase} == <star2> => Ich weiss...
+- Hi {formal}<star2>{/formal}, leider kann ich es derzeit noch nicht speichern - bitte deinen Admin das Attribut "realname" auf deinem Nutzer zu korrigieren.
+
++ (lächeln|grinsen)
+- Freut mich dass es dir gefällt
+
+/*****************************************************************************\
+ * FHEM Temperaturen                                                          *
+\*****************************************************************************/
+// Switch to concatenation with newlines for the output in separate lines
+! local concat = newline
+
++ temperaturen
+- 🍳 Küche: <call>readingsval KU_Wandthermostat temperature Error</call> °C
+^ 💻 Büro: <call>readingsval OF_Wandthermostat temperature Error</call> °C
+^ 📺 Wohnzimmer: <call>readingsval LR_Wandthermostat temperature Error</call> °C
+^ 🛁 Bad: <call>readingsval BA_HMS_TEMPHUM temperature Error</call> °C
+^ 💏 Schlafzimmer: <call>readingsval BR_Wandthermostat temperature Error</call> °C
+^ 🍃 Aussen: <call>readingsval BK_Wetterstation temperature Error</call> °C
+^ 🍎 Kühlschrank: <call>readingsval KU_TEMPHUM_KUEHLSCHRANK temperature Error</call> °C
+^ ☃ Tiefgefrierfach: <call>readingsval KU_TEMPHUM_TIEFGEFRIERFACH temperature Error</call> °C
+
+// Switch to concatenation with nothing
+! local concat = none
+
+
+// Aussen
+! sub balkon                   = aussen
+! sub draussen                 = aussen
+! sub garten                   = aussen
+// Wohnzimmer
+! sub wozi                     = wohnzimmer
+// Schlafzimmer
+! sub schlazi                  = schlafzimmer
+// Büro
+! sub buero                    = büro
+! sub office                   = büro
+
+// Temperatur
+! array temportsbeschreibung  = im|in der|auf dem
+! array tempfrage             = wie warm ist es|temperatur|wie kalt ist es|wieviel grad hat es
+! array temproomkueche        = kühlschrank|tiefgefrierfach|küche
+! array temproomwohnzimmer    = wohnzimmer|wozi
+! array temproombuero         = büro|office
+! array temproomschlafzimmer  = schlafzimmer|schlazi
+! array temproomaussen        = balkon|aussen|draussen|garten
+! array temprooms             = @temproomwohnzimmer|@temproombuero|@temproomkueche|@temproomschlafzimmer|@temproomschlafzimmer|@temproomkueche
+
++ [@tempfrage] [@temportsbeschreibung] (@temprooms)
+* <star1> == wohnzimmer => Die Temperatur im Wohnzimmer beträgt <call>readingsval LR_Wandthermostat temperature Error</call> °C (<call>readingstimestamp LR_Wandthermostat temperature Error</call>)
+* <star1> == bad => Die Temperatur im Bad beträgt <call>readingsval BA_HMS_TEMPHUM temperature Error</call> °C (<call>readingstimestamp BA_HMS_TEMPHUM temperature Error</call>)
+* <star1> == büro => Die Temperatur im Büro beträgt <call>readingsval OF_Wandthermostat temperature Error</call> °C (<call>readingstimestamp OF_Wandthermostat temperature Error</call>)
+* <star1> == küche => Die Temperatur in der Küche beträgt <call>readingsval KU_Wandthermostat temperature Error</call> °C (<call>readingstimestamp KU_Wandthermostat temperature Error</call>)
+* <star1> == kühlschrank => Die Temperatur im Kühlschrank beträgt <call>readingsval KU_TEMPHUM_KUEHLSCHRANK temperature Error</call> °C (<call>readingstimestamp KU_TEMPHUM_KUEHLSCHRANK temperature Error</call>)
+* <star1> == tiefgefrierfach => Die Temperatur im Tiefgefrierfach beträgt <call>readingsval KU_TEMPHUM_TIEFGEFRIERFACH temperature Error</call> °C (<call>readingstimestamp KU_TEMPHUM_TIEFGEFRIERFACH temperature Error</call>)
+* <star1> == balkon => Die Temperatur Aussen beträgt <call>readingsval BK_Wetterstation temperatur Error</call> °C (<call>readingstimestamp BK_Wetterstation temperatur Error</call>)
+* <star1> == schlafzimmer => Die Temperatur im Schlafzimmer beträgt <call>readingsval BR_Wandthermostat temperature Error</call> °C (<call>readingstimestamp BR_Wandthermostat temperature Error</call>)
+- Keine Ahnung wie warm es in "<star1>" ist.
+
+/*****************************************************************************\
+ * FHEM Wetter                                                                *
+\*****************************************************************************/
+! array wetterfrage = wie warm wird es|temperatur|wie kalt wird es
+! array wettertage = heute|morgen|übermorgen
+
+// Switch to concatenation with newlines for the output in separate lines
+! local concat = newline
+
++ (@wetterfrage) [@wettertage]
+* <star1> == heute => Es werden heute Aussentemperaturen von <call>readingsval BK_Wetter fc0_low_c Error</call> - <call>readingsval BK_Wetter fc0_high_c Error</call> °C erwartet
+* <star1> == morgen => Es werden morgen Aussentemperaturen von <call>readingsval BK_Wetter fc1_low_c Error</call> - <call>readingsval BK_Wetter fc1_high_c Error</call> °C erwartet
+* <star1> == übermorgen => Es werden übermorgen Aussentemperaturen von <call>readingsval BK_Wetter fc2_low_c Error</call> - <call>readingsval BK_Wetter fc2_high_c Error</call> °C erwartet
+- Die Temperaturen der nächsten Tage:
+^ Heute: <call>readingsval BK_Wetter fc1_low_c Error</call> - <call>readingsval BK_Wetter fc3_high_c Error</call> °C
+^ Morgen: <call>readingsval BK_Wetter fc2_low_c Error</call> - <call>readingsval BK_Wetter fc3_high_c Error</call> °C
+^ Übermorgen: <call>readingsval BK_Wetter fc3_low_c Error</call> - <call>readingsval BK_Wetter fc3_high_c Error</call> °C
+
+// Switch to concatenation with nothing
+! local concat = none
+
+/*****************************************************************************\
+ * FHEM Befehle                                                               *
+\*****************************************************************************/
+! array schaltenaliaseinschalten		= an|on|ein
+! array schaltenaliasausschalten		= aus|off
+! array schaltenaliasartikel			= der|die|das
+! array schaltenaliasfuellwoerter		= schalte|mach
+! array schaltenaliasorte				= in|am|auf
+
++ [@schaltenaliasfuellwoerter] [@schaltenaliasartikel] kaffeemaschine (@schaltenaliaseinschalten)
+- Befehl abgesetzt <call>fhem set KU_SWITCH_COFFEE_Sw on</call>
+^ Aktueller status: <call>readingsval KU_SWITCH_COFFEE_Sw state Error</call>
+
++ [@schaltenaliasfuellwoerter] [@schaltenaliasartikel] licht [@schaltenaliasorte] büro (@schaltenaliaseinschalten)
+- Befehl abgesetzt <call>fhem set OF_LIGHT_CEIL on</call>
+^ Aktueller status: <call>readingsval OF_LIGHT_CEIL state Error</call>
+
++ [@schaltenaliasfuellwoerter] [@schaltenaliasartikel] licht [@schaltenaliasorte] büro (@schaltenaliasausschalten)
+- Befehl abgesetzt <call>fhem set OF_LIGHT_CEIL on</call>
+^ Aktueller status: <call>readingsval OF_LIGHT_CEIL state Error</call>
