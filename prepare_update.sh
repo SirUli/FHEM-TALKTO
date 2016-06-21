@@ -9,6 +9,6 @@ find ./FHEM -type f \( ! -iname ".*" \) -print0 | while IFS= read -r -d '' f;
 done
 
 # CHANGED file
-echo "FHEM ABFALL and more last change:" > CHANGED
+echo "FHEM TALKTOME and TALKTOUSER last change:" > CHANGED
 echo $(date +"%Y-%m-%d") >> CHANGED
 echo " - $(git log -1 --pretty=%B)" >> CHANGED
