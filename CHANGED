@@ -1,3 +1,8 @@
-FHEM TALKTOME AND TALKTOUSER last change:
+FHEM TALKTOME AND TALKTOUSER last changes:
+2016-06-30
+ - Removed default attributes icon, group and rsbrainfile
+ - Fixed the possibility to disable the module TALKTOME
+ - Added rspunctuation as attribute to enable other special characters
+ 
 2016-06-21
  - Initial Upload of the TALKTO modules

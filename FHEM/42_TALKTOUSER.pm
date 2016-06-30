@@ -59,22 +59,20 @@ sub TALKTOUSER_Define($$) {
 
     Log3 $name, 5, "TALKTOUSER $name: called function TALKTOUSER_Define()";
 
-    #if ( int(@a) < 1 ) {
-    #    my $msg = "Wrong syntax: define <name> TALKTOUSER";
-    #    Log3 $name, 4, $msg;
-    #    return $msg;
-    #}
-
     $hash->{TYPE} = "TALKTOUSER";
+
+	# Define should be only device name and Modulename, nothing else
+	if(@a > 3) {
+		my $msg = "wrong syntax: define <name> TALKTOUSER";
+		Log3 $hash, 2, $msg;
+		return $msg;
+	}
 	
     readingsBeginUpdate($hash);
 
     # set default settings on first define
     if ($init_done) {
-        $attr{$name}{group} = "TALKTO";
-
 		my $username = $name;
-        $attr{$name}{icon}				= "people_sensor";
         $attr{$name}{realname}			= $username;
 		$attr{$name}{nomatch}			= "Ich konnte leider keine gute Antwort finden!";
 		$attr{$name}{noreply}			= "Ich weiss leider nicht was ich darauf sagen soll!";
@@ -428,7 +426,7 @@ sub TALKTOUSER_Parse($$$) {
       <div style="margin-left: 2em">
         <code>define &lt;name&gt; TALKTOUSER</code><br>
         <br>
-        This module uses <a href="http://www.rivescript.com">rivescript</a> to build a kind of chatbot. Defining an TALKTOUSER device provides the interaction with individual users Any input is forwarded where the rivescript brain is available.<br>
+        This module uses <a href="http://www.rivescript.com">rivescript</a> to build a kind of chatbot. Defining an TALKTOUSER device provides the interaction with individual users. Any input is forwarded to a TALKTOUSER device where the rivescript brain is available.<br>
         <br>
         Example:<br>
         <div style="margin-left: 2em">
@@ -442,6 +440,10 @@ sub TALKTOUSER_Parse($$$) {
         <code>set &lt;name&gt; &lt;command&gt; [&lt;parameter&gt;]</code><br>
         <ul>
           <li><b>query</b> &nbsp;&nbsp;-&nbsp;&nbsp; Sends a query to the TALKETOME device which is being answered in the reading "reply". The current state of the .</li>
+		  <li><b>querytotarget</b> &nbsp;&nbsp;-&nbsp;&nbsp; Sends a query to the TALKETOME device on behalf of another device.<br />Example: "set $name querytotarget MYSUPERDEVICE
+		  What is the question?" would be seen by the module as if MYSUPERDEVICE has asked the question. This allows to for example send notifications to users and to be able to e.g.
+		  disable devices based on the answer of the user (e.g. Battery Monitoring). Take care to include the complete device string, e.g.  MYTELEGRAMBOT:@99999999 if you use that
+		  with certain device types</li>
         </ul>
       </div><br>
       <br>
@@ -450,7 +452,6 @@ sub TALKTOUSER_Parse($$$) {
         <code>get &lt;name&gt; &lt;what&gt;</code><br>
         <br>
         Currently no commands are defined
-        </div>
       </div><br>
       <br>
 	  <a name="TALKTOUSERattr" id="TALKTOUSERattr"></a> <b>Attributes</b>
@@ -461,7 +462,6 @@ sub TALKTOUSER_Parse($$$) {
 		  <li><b>noreply</b> &nbsp;&nbsp;-&nbsp;&nbsp; Defines the reply which is given when no replay was found</li>
 		  <li><b>realname</b> &nbsp;&nbsp;-&nbsp;&nbsp; Rivescript can react to the user with a personalized answer. The configured value is taken as the username for such replies and can be used using <code>&lt;id&gt;</code> in the Rivescript brain file (<a href="https://www.rivescript.com/docs/tutorial#tags">See Rivescript Tutorial</a>)</li>
         </ul>
-        </div>
       </div><br>
       <br>
 	  <a name="TALKTOUSERreadings" id="TALKTOUSERreadings"></a> <b>Readings</b>
@@ -472,7 +472,6 @@ sub TALKTOUSER_Parse($$$) {
 		  <li><b>reply</b> &nbsp;&nbsp;-&nbsp;&nbsp; Contains the last reply to a query on the current TALKTOUSER device (e.g. from the <code>set &lt;name&gt; query Foo</code> query)</li>
 		  <li><b>state</b> &nbsp;&nbsp;-&nbsp;&nbsp; Contains the status of a query from any device (e.g. via notify) to the current TALKTOUSER device</li>
         </ul>
-        </div>
       </div>
     </div>
 

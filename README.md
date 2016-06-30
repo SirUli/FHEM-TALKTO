@@ -20,6 +20,8 @@ Rename the file FHEM/TALKTOME.rive.template to FHEM/TALKTOME.rive and edit if yo
 	
 ### Attributes #
 
+Please check the commandref as usual
+
 ## How to Update
 The Perl module can be update directly with standard fhem update process. For this please copy the below command into the FHEM command line.
 

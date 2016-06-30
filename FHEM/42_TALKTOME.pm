@@ -85,7 +85,7 @@ sub TALKTOME_Initialize($) {
 	# UndefFn: Called when deleting a device
 	$hash->{UndefFn} = "TALKTOME_Undefine";
 	
-	$hash->{AttrList} = "disable:0,1 rsdebug:0,1 rsdebugfile rsbrainfile " .
+	$hash->{AttrList} = "disable:0,1 rsdebug:0,1 rsdebugfile rsbrainfile rspunctuation " .
 						$readingFnAttributes;
 }
 
@@ -106,21 +106,14 @@ sub TALKTOME_Define($$) {
 	}
 
     $hash->{TYPE} = "TALKTOME";
-    # set default settings on first define
+	# TODO: Check if multiple devices are possible or useful and build checks for that
+	
+	# set default settings on first define
     if ($init_done) {
-        $attr{$name}{alias}          = "TalkToMe";
-		# Holds the path to the brain of rivescript:
-        $attr{$name}{rsbrainfile}    = "$attr{global}{modpath}/TALKTOME.rive";
 		# Set disable as the rsbrainfile is probably not there yet.
 		if ( ! -f $attr{$name}{rsbrainfile}) {
 			$attr{$name}{disable}        = "1";
-		}
-		$attr{$name}{group}          = "TALKTO";
-        $attr{$name}{icon}           = "audio_mic";
-		$attr{$name}{rsdebug}        = "0";
-		# This is the debug log for rivescript
-		$attr{$name}{rsdebugfile}    = "$attr{global}{modpath}/log/TALKTOME.log";
-		
+		}		
     }
 	
 	readingsSingleUpdate ($hash,  "state", "Defined", 1);
@@ -227,13 +220,15 @@ sub TALKTOME_Connect(@) {
 		my $rsdebugfile = AttrVal($name, "rsdebugfile", "$attr{global}{modpath}/log/TALKTOME.log");
 		Log3 $name, 5, "TALKTOME: rsdebugfile is set to $rsdebugfile";
 		
+		my $rspunctuation = AttrVal($name, "rspunctuation", ".,!?;:¡¿");
+		
 		# Some config for rivescript:
 		my %rivescriptconfig = ('utf8'       => 1,
 			debug => $rsdebug,
 			verbose => 0,
 			debugfile => $rsdebugfile,
 			strict => 0,
-			unicode_punctuation => qr/[.,!?;:¡¿]/);
+			unicode_punctuation => qr/[$rspunctuation]/);
 		
 		# Do the Initialization
 		Log3 $name, 5, "TALKTOME: Running init of Rivescript Bot";
@@ -335,17 +330,17 @@ sub TALKTOME_Set($@) {
 ###################################
 sub TALKTOME_Attr(@) {
 	my ($cmd,$name,$aName,$aVal) = @_;
-	my $hash = $modules{TALKTOME}{defptr}{$name};
+	my $hash = $defs{$name};
   	# $cmd can be "del" or "set"
 	# $name is device name
 	# aName and aVal are Attribute name and value
 	if ($aName eq "disable") {
 		if ($aVal ne "0" && $cmd eq "set") {
-			readingsSingleUpdate ($hash,  "state", "disabled", 1);
+			readingsSingleUpdate ($hash, "state", "disabled", 1);
 		} else {
-			readingsSingleUpdate ($hash,  "state", "enabled", 1);
+			readingsSingleUpdate ($hash, "state", "enabled", 1);
 		}
-	} elsif ($aName eq "rsdebug") {
+	} elsif ($aName eq "rsdebug" || $aName eq "rspunctuation") {
 		# Afterwards Rivescript should be reloaded - whatever is being done (set or del):
 		TALKTOME_Reload($hash);
 	}
@@ -493,7 +488,6 @@ sub TALKTOME_DispatchToInterpreter($$$) {
         Example:<br>
         <div style="margin-left: 2em">
           <code>define TalkToMe TALKTOME</code>
-        </div>
       </div><br>
       <br>
       <a name="TALKTOMEset" id="TALKTOMEset"></a> <b>Set</b>
@@ -509,7 +503,6 @@ sub TALKTOME_DispatchToInterpreter($$$) {
         <code>get &lt;name&gt; &lt;what&gt;</code><br>
         <br>
         Currently no commands are defined
-        </div>
       </div><br>
       <br>
 	  <a name="TALKTOMEattr" id="TALKTOMEattr"></a> <b>Attributes</b>
@@ -519,8 +512,8 @@ sub TALKTOME_DispatchToInterpreter($$$) {
           <li><b>rsbrainfile</b> &nbsp;&nbsp;-&nbsp;&nbsp; Path to the Brainfile for rivescript. The default is being set upon Module definition and is in $attr{global}{modpath}/FHEM/TALKTOME.rive</li>
 		  <li><b>rsdebug</b> &nbsp;&nbsp;-&nbsp;&nbsp; Enables (1) or disables (0) the debug mode of rivescript. Attention: Can lead to a massive logfile which is defined in rsdebugfile</li>
 		  <li><b>rsdebugfile</b> &nbsp;&nbsp;-&nbsp;&nbsp; Path to the Debuglogfile for rivescript. The default is being set upon Module definition and is in $attr{global}{modpath}/log/TALKTOME.log</li>
+		  <li><b>rspunctuation</b> &nbsp;&nbsp;-&nbsp;&nbsp; This sets the characters which are seen as punctuation. This defaults to ".,!?;:¡¿". Example: You want to enable /Temperatures in Telegram. For this you would set ".,!?;:¡¿/" in this parameter so that Rivescript processes "Temperatures"
         </ul>
-        </div>
       </div><br>
       <br>
       <a name="TALKTOMEreadings" id="TALKTOMEreadings"></a> <b>Readings</b>
@@ -528,7 +521,6 @@ sub TALKTOME_DispatchToInterpreter($$$) {
         <ul>
 		  <li><b>state</b> &nbsp;&nbsp;-&nbsp;&nbsp; Contains the status of a query from any TALKTOUSER device</li>
         </ul>
-        </div>
       </div>
     </div>
 
