@@ -44,6 +44,7 @@ sub TALKTOME_helpers_ReadingsVal(@);
 sub TALKTOME_helpers_AttrVal(@);
 sub TALKTOME_helpers_ReadingsTimestamp(@);
 sub TALKTOME_helpers_fhem(@);
+sub TALKTOME_helpers_perl(@);
 sub TALKTOME_Connect(@);
 sub TALKTOME_Reload($);
 sub TALKTOME_Set($@);
@@ -151,6 +152,9 @@ sub TALKTOME_helpers_ReadingsVal(@) {
 	shift(@_);
 	# Now we'll figure the rest of the arguments
 	my ($device, $reading, $default) = @_;
+	# At this point, rivescript just calls a method but has no idea about fhem devices.
+	# Therefore to debug this function, you need to set the vorbosity level 5 on the "global" device
+	Log3 undef, 5, "TALKTOME: called function TALKTOME_helpers_ReadingsTimestamp to get the reading '$reading' from '$device' with a default of '$default'";
 	# Get the reading and then give it back
 	return ReadingsVal($device, $reading, $default);
 }
@@ -160,9 +164,12 @@ sub TALKTOME_helpers_AttrVal(@) {
 	# A sub always gets the bot as first argument - we'll just remove that
 	shift(@_);
 	# Now we'll figure the rest of the arguments
-	my ($device, $reading, $default) = @_;
+	my ($device, $attribute, $default) = @_;
 	# Get the reading and then give it back
-	return AttrVal($device, $reading, $default);
+	# At this point, rivescript just calls a method but has no idea about fhem devices.
+	# Therefore to debug this function, you need to set the vorbosity level 5 on the "global" device
+	Log3 undef, 5, "TALKTOME: called function TALKTOME_helpers_AttrVal to get the attribute '$attribute' from '$device' with a default of '$default'";
+	return AttrVal($device, $attribute, $default);
 }
 
 # Wrapper function for ReadingsTimestamp
@@ -171,20 +178,49 @@ sub TALKTOME_helpers_ReadingsTimestamp(@) {
 	shift(@_);
 	# Now we'll figure the rest of the arguments
 	my ($device, $reading, $default) = @_;
+	# At this point, rivescript just calls a method but has no idea about fhem devices.
+	# Therefore to debug this function, you need to set the vorbosity level 5 on the "global" device
+	Log3 undef, 5, "TALKTOME: called function TALKTOME_helpers_ReadingsTimestamp to get the timestamp of the reading '$reading' from '$device' with a default of '$default'";
+	
 	# Get the reading and then give it back
 	return ReadingsTimestamp($device, $reading, $default);
 }
 
-# Wrapper function for ReadingsTimestamp
+# Wrapper function for calls to fhem
 sub TALKTOME_helpers_fhem(@) {
 	# A sub always gets the bot as first argument - we'll just remove that
 	shift(@_);
 	my $command = join(' ', @_);
 	
-	Log3 "TC_TALKTOME", 5, "TALKTOME: called function TALKTOME_helpers_fhem with command: $command";
+	# At this point, rivescript just calls a method but has no idea about fhem devices.
+	# Therefore to debug this function, you need to set the vorbosity level 5 on the "global" device
+	Log3 undef, 5, "TALKTOME: called function TALKTOME_helpers_fhem with command: $command";
 	# Now we'll figure the rest of the arguments
 	# Get the reading and then give it back
 	return fhem($command);
+}
+
+# Wrapper function for calling perl functions
+sub TALKTOME_helpers_perl(@) {
+	# A sub always gets the bot as first argument - we'll just remove that
+	shift(@_);
+	my $command = join(' ', @_);
+
+	# At this point, rivescript just calls a method but has no idea about fhem devices.
+	# Therefore to debug this function, you need to set the vorbosity level 5 on the "global" device
+	Log3 undef, 5, "TALKTOME: called function TALKTOME_helpers_perl with command: $command";
+
+	my $result = "If you see this text, then something went seriously wrong";
+	# Now we'll call the perl function and then give it's result back. As we do not trust the perl stuff
+	# some error handling is required. Source: https://stackoverflow.com/questions/10342875
+	eval {
+		$result = &{\&{$command}}();
+	};
+	if (my $e = $@) {
+		$result = "Something went wrong: $e";
+	}
+	
+	return $result;
 }
 
 # Initializes the rivescript-bot
@@ -239,7 +275,7 @@ sub TALKTOME_Connect(@) {
 		#$hash->{RSOBJECT}->loadDirectory("./replies");
 		
 		# Load another file.
-		my $rsbrainfile = AttrVal($name, "rsbrainfile", "$attr{global}{modpath}/TALKTOME.rive");
+		my $rsbrainfile = AttrVal($name, "rsbrainfile", "$attr{global}{modpath}/FHEM/TALKTOME.rive");
 		
 		if ( ! -f $rsbrainfile) {
 			Log3 $name, 3, "TALKTOME: rsbrainfile points to a file that does not exist, please copy template file or create one";
@@ -267,6 +303,9 @@ sub TALKTOME_Connect(@) {
 			
 			# Now add the fhem possibilities to the available functions
 			$hash->{RSOBJECT}->setSubroutine("fhem", \&TALKTOME_helpers_fhem);
+			
+			# Now add the perl possibilities to the available functions
+			$hash->{RSOBJECT}->setSubroutine("perl", \&TALKTOME_helpers_perl);
 			
 			# You must sort the replies before trying to fetch any!
 			$hash->{RSOBJECT}->sortReplies();

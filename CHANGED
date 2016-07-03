@@ -1,4 +1,8 @@
 FHEM TALKTOME AND TALKTOUSER last changes:
+2016-07-03
+ - Added call to perl - At this point it is an alpha release, no guarantee that this works!
+ - Fixed the log functions. To debug the "<call>" statements, you need to set the verbose level on global
+
 2016-06-30
  - Removed default attributes icon, group and rsbrainfile
  - Fixed the possibility to disable the module TALKTOME

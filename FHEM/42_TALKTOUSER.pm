@@ -158,9 +158,8 @@ sub TALKTOUSER_Notify($$) {
 	Log3 $name, 5, "TALKTOUSER $name: $devName has the attribute talktouserMonitorReading set to $monitorReading";
 	return undef if( $monitorReading eq "###ERROR###" );
 	
-	# Get the optional attribute which can modify the 
+	# Get the optional attribute which can modify the source device, e.g. special user attributes
 	my $modSourceDev = AttrVal($devName, "talktouserModSourceDev", "%DEVICE%" );
-	
 	Log3 $name, 5, "TALKTOUSER $name: $devName has the attribute talktouserModSourceDev set to $modSourceDev";
 	
 	$modSourceDev =~ s/%DEVICE%/$devName/g;
@@ -337,7 +336,7 @@ sub TALKTOUSER_Parse($$$) {
 		# Now determine if the dispatched message came from the TALKTOUSER Device UI
 		# (and should be given back there) or if it came through notify (and should
 		# go back to the origin)
-		Log3 $hash, 5, "TALKTOUSER_Parse $name: Variable answer - $answer (UTF8: " . utf8::is_utf8($answer) . ")";
+		Log3 $hash, 5, "TALKTOUSER_Parse $name: Variable answer - $answer";
 		
 		if ($device eq $sourceDeviceName) {
 			# So this is really a TALKTOUSER device
@@ -373,36 +372,6 @@ sub TALKTOUSER_Parse($$$) {
 			# Dump it to fhem (lets hope for the best ;) )
 			Log3 $name, 5, "msg $device $msgPriority $msgTitle $msgMessage";
 			fhem("msg $device $msgPriority $msgTitle $msgMessage");
-			
-			# This contains the commands to respond to a message			
-			# my $msgCmdPush = AttrVal($sourceDeviceName,"msgCmdPush","");
-			
-			# Log3 $name, 4, "TALKTOUSER_Parse $name: msgCmdPush: $msgCmdPush";
-			
-			# if($msgCmdPush eq "") {
-				# Log3 $name, 2, "TALKTOUSER_Parse $name: Help! I have no clue how to send my message. Define the userattr 'msgCmdPush' on the device (maybe already done for the msg device), e.g. for yowsup devices: attr <device> userattr msgCmdPush; attr <device> msgCmdPush set %DEVICE% send %TITLE% %MSG%";
-			# } else {
-				# # For yowsup devices there is a bug with the newlines. Edit yowsup/layers/protocol_messages/protocolentities/message_text.py und find:
-				# #                   def setBody(self, body):
-				# #                       self.body = body
-				# # Replace by:
-				# #                   def setBody(self, body):
-				# #                       self.body = body.replace("!-!","\n")
-				# # To also run the correct answers to yowsup now, the module replaces newlines by the string "!-!":
-				# if ($sourceDeviceType eq "yowsup") {
-					# $answer =~ s/\n/!-!/gi;
-				# }
-				# # Replace the sourceDeviceName in the message command
-				# $msgCmdPush =~ s/%DEVICE%/$sourceDeviceName/gi;
-				# # Replace the title in the message command
-				# $msgCmdPush =~ s/%TITLE%//gi;
-				# # Put the answer in
-				# $msgCmdPush =~ s/%MSG%/$answer/gi;
-				# Log3 $name, 4, "TALKTOUSER_Parse $name: Running: $msgCmdPush";
-				# # Dump it to fhem (lets hope for the best ;) )
-				# fhem($msgCmdPush);
-				# Log3 $name, 4, "TALKTOUSER_Parse $name: Updated $sourceDeviceName with the reply";
-			# }
 		}
 		return $devHash->{NAME};
 	}
@@ -449,8 +418,6 @@ sub TALKTOUSER_Parse($$$) {
       <br>
       <a name="TALKTOUSERget" id="TALKTOUSERget"></a> <b>Get</b>
       <div style="margin-left: 2em">
-        <code>get &lt;name&gt; &lt;what&gt;</code><br>
-        <br>
         Currently no commands are defined
       </div><br>
       <br>
@@ -461,6 +428,7 @@ sub TALKTOUSER_Parse($$$) {
           <li><b>nomatch</b> &nbsp;&nbsp;-&nbsp;&nbsp; Defines the reply which is given when no match was found</li>
 		  <li><b>noreply</b> &nbsp;&nbsp;-&nbsp;&nbsp; Defines the reply which is given when no replay was found</li>
 		  <li><b>realname</b> &nbsp;&nbsp;-&nbsp;&nbsp; Rivescript can react to the user with a personalized answer. The configured value is taken as the username for such replies and can be used using <code>&lt;id&gt;</code> in the Rivescript brain file (<a href="https://www.rivescript.com/docs/tutorial#tags">See Rivescript Tutorial</a>)</li>
+		  <li><b>IODev</b> &nbsp;&nbsp;-&nbsp;&nbsp; Can be used to run multiple TALKTOME Devices and to connect the user based devices to different brains then. Advice from the Author: Run only one and don't mess with this parameter ;)</li>
         </ul>
       </div><br>
       <br>
