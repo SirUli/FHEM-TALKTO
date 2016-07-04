@@ -1,0 +1,15 @@
+language: "perl"
+perl:
+  - "5.22"
+  - "5.20"
+  - "5.18"
+  - "5.16"
+  - "5.14"
+  - "5.12"
+
+install:
+  - cpanm -v --installdeps --notest .
+
+script:
+  - "perl -c FHEM/42_TALKTOME.pm"
+  - "perl -c FHEM/42_TALKTOUSER.pm"
