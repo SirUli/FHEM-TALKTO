@@ -86,7 +86,7 @@ sub TALKTOME_Initialize($) {
 	# UndefFn: Called when deleting a device
 	$hash->{UndefFn} = "TALKTOME_Undefine";
 	
-	$hash->{AttrList} = "disable:0,1 rsdebug:0,1 rsdebugfile rsbrainfile rspunctuation " .
+	$hash->{AttrList} = "disable:0,1 rsdebug:0,1 rsdebugfile rsbraindir rsbrainfile rspunctuation " .
 						$readingFnAttributes;
 }
 
@@ -272,15 +272,24 @@ sub TALKTOME_Connect(@) {
 		$hash->{RSOBJECT} = RiveScript->new(%rivescriptconfig);
 
 		# Load a directory full of RiveScript documents.
-		#$hash->{RSOBJECT}->loadDirectory("./replies");
-		
+		my $rsbraindir = AttrVal($name, "rsbraindir", "$attr{global}{modpath}/FHEM/TALKTO");
+		if (-d $rsbraindir) {
+			# directory exists
+			Log3 $name, 5, "TALKTOME: rsbraindir is set to $rsbraindir, loading";
+			$hash->{RSOBJECT}->loadDirectory($rsbraindir);
+			Log3 $name, 5, "TALKTOME: Load of rsbraindir completed";
+		} elsif (-e $rsbraindir) {
+			# exists but is not a directory
+			Log3 $name, 5, "TALKTOME: rsbraindir is not a directory, skipping";
+		} else {
+			# does not exist
+			Log3 $name, 5, "TALKTOME: rsbraindir not available, skipping";
+		}
+
 		# Load another file.
 		my $rsbrainfile = AttrVal($name, "rsbrainfile", "$attr{global}{modpath}/FHEM/TALKTOME.rive");
 		
-		if ( ! -f $rsbrainfile) {
-			Log3 $name, 3, "TALKTOME: rsbrainfile points to a file that does not exist, please copy template file or create one";
-			readingsSingleUpdate ($hash,  "state", "ERROR: rsbrainfile points to a file that does not exist, please copy template file or create one", 1);
-		} else {
+		if ( -f $rsbrainfile) {
 			# Lets put up handler for warning messages in case the rsbrainfile is not properly written
 			local $SIG{__WARN__} = sub {
 				my $message = shift;
@@ -309,6 +318,12 @@ sub TALKTOME_Connect(@) {
 			
 			# You must sort the replies before trying to fetch any!
 			$hash->{RSOBJECT}->sortReplies();
+		} elsif ( -e $rsbrainfile ) {
+			Log3 $name, 3, "TALKTOME: rsbrainfile ($rsbrainfile) is not a file, please check";
+			readingsSingleUpdate ($hash,  "state", "ERROR: rsbrainfile is not a file, please check", 1);
+		} else {
+			Log3 $name, 3, "TALKTOME: rsbrainfile ($rsbrainfile) does not exist, please copy template file or create one";
+			readingsSingleUpdate ($hash,  "state", "ERROR: rsbrainfile does not exist, please copy template file or create one", 1);
 		}
 	}
 	# Initialization finished
@@ -549,6 +564,7 @@ sub TALKTOME_DispatchToInterpreter($$$) {
         <code>attr &lt;name&gt; &lt;attribute&gt; [&lt;parameter&gt;]</code><br>
         <ul>
           <li><b>rsbrainfile</b> &nbsp;&nbsp;-&nbsp;&nbsp; Path to the Brainfile for rivescript. The default is being set upon Module definition and is in $attr{global}{modpath}/FHEM/TALKTOME.rive</li>
+		  <li><b>rsbraindir</b> &nbsp;&nbsp;-&nbsp;&nbsp; Path to a directory with Brainfiles for rivescript. The default path is $attr{global}{modpath}/FHEM/TALKTO</li>
 		  <li><b>rsdebug</b> &nbsp;&nbsp;-&nbsp;&nbsp; Enables (1) or disables (0) the debug mode of rivescript. Attention: Can lead to a massive logfile which is defined in rsdebugfile</li>
 		  <li><b>rsdebugfile</b> &nbsp;&nbsp;-&nbsp;&nbsp; Path to the Debuglogfile for rivescript. The default is being set upon Module definition and is in $attr{global}{modpath}/log/TALKTOME.log</li>
 		  <li><b>rspunctuation</b> &nbsp;&nbsp;-&nbsp;&nbsp; This sets the characters which are seen as punctuation. This defaults to ".,!?;:¡¿". Example: You want to enable /Temperatures in Telegram. For this you would set ".,!?;:¡¿/" in this parameter so that Rivescript processes "Temperatures"
