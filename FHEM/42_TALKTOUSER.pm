@@ -155,16 +155,19 @@ sub TALKTOUSER_Notify($$) {
 	# Return if there is nothing monitored on this device
 	# Check if the attribute is empty (which means that nothing is configured)
 	my $monitorReading = AttrVal($devName, "talktouserMonitorReading", "###ERROR###" );
-	Log3 $name, 5, "TALKTOUSER $name: $devName has the attribute talktouserMonitorReading set to $monitorReading";
+	Log3 $name, 5, "TALKTOUSER $name: Attr talktouserMonitorReading of $devName is: $monitorReading";
 	return undef if( $monitorReading eq "###ERROR###" );
 	
 	# Get the optional attribute which can modify the source device, e.g. special user attributes
 	my $modSourceDev = AttrVal($devName, "talktouserModSourceDev", "%DEVICE%" );
-	Log3 $name, 5, "TALKTOUSER $name: $devName has the attribute talktouserModSourceDev set to $modSourceDev";
+	Log3 $name, 5, "TALKTOUSER $name: Attr talktouserModSourceDev of $devName is: $modSourceDev";
 	
-	$modSourceDev =~ s/%DEVICE%/$devName/g;
+	# Replace the @ if somebody has put it there "accidentally" - just to ensure that no mistakes are made
+	$modSourceDev =~ s/\@%DEVICE%/%DEVICE%/g;
+	# Replace the device name
+	$modSourceDev =~ s/%DEVICE%/\@$devName/g;
 	
-	Log3 $name, 5, "TALKTOUSER $name: $devName has the attribute talktouserModSourceDev now is $modSourceDev";
+	Log3 $name, 5, "TALKTOUSER $name: Attr talktouserModSourceDev of $devName is: $modSourceDev";
 	
 	# Split the string to have only the matches
 	my @modSourceDevMatches = ($modSourceDev =~ /%%(.*?)%%/sg);
@@ -209,9 +212,9 @@ sub TALKTOUSER_Notify($$) {
 			for (my $i = 0; $i < $modSourceDevMatchesNr; $i++) {
 				my $modSourceDevMatchesIteration = $modSourceDevMatches[$i];
 				if($key eq $modSourceDevMatchesIteration) {
-					Log3 $name, 5, "TALKTOUSER $name: modSourceDev before: $modSourceDev";
+					Log3 $name, 5, "TALKTOUSER $name: Attr talktouserModSourceDev of $devName is: $modSourceDev";
 					$modSourceDev =~ s/%%$modSourceDevMatchesIteration%%/$value/g;
-					Log3 $name, 5, "TALKTOUSER $name: modSourceDev after: $modSourceDev";
+					Log3 $name, 5, "TALKTOUSER $name: Attr talktouserModSourceDev of $devName is: $modSourceDev";
 				}
 			}
 		}
@@ -222,7 +225,7 @@ sub TALKTOUSER_Notify($$) {
 		Log3 $name, 5, "TALKTOUSER $name: Update Content: $monitorReadingValue";
 		TALKTOUSER_IOWrite($hash, $dev, $modSourceDev, $monitorReadingValue);
 	}
-	Log3 $name, 5, "TALKTOUSER $name: called function TALKTOUSER_Notify()";
+	Log3 $name, 5, "TALKTOUSER $name: finished call to function TALKTOUSER_Notify()";
 	return undef;
 }
 
@@ -357,20 +360,19 @@ sub TALKTOUSER_Parse($$$) {
 			my @msgConfig = devspec2array("TYPE=msgConfig");
 			if(!@msgConfig) {
 				Log3 $name, 2, "TALKTOUSER_Parse $name: I have not found a msgConfig Device for the reply.";
-				Log3 $name, 2, "TALKTOUSER_Parse $name: Additionally you could define the corresponding userattr msgCmd* for your device, e.g. for yowsup: attr <device> userattr msgCmdPush; attr <device> msgCmdPush set %DEVICE% send %TITLE% %MSG%";
+				Log3 $name, 2, "TALKTOUSER_Parse $name: Additionally you could define the corresponding userattr msgCmd* for your device if required, e.g. for yowsup: attr <device> userattr msgCmdPush; attr <device> msgCmdPush set %DEVICE% send %TITLE% %MSG%";
 			}
 			
 			# Lets build the command
 			# msg [<type>] [<@device|e-mail address>] [<priority>] [|<title>|] <message>
 			my $msgTitle = "| |";
-			my $device = "\@" . $modSourceDeviceName;
 			my $msgPriority = 0;
 			# Escape the newlines to ensure that this is properly transmitted
 			$answer =~ s/\n/\\n/gi;
 			my $msgMessage = $answer;
 			
 			# Dump it to fhem (lets hope for the best ;) )
-			Log3 $name, 5, "msg $device $msgPriority $msgTitle $msgMessage";
+			Log3 $name, 5, "msg $modSourceDeviceName $msgPriority $msgTitle $msgMessage";
 			fhem("msg $device $msgPriority $msgTitle $msgMessage");
 		}
 		return $devHash->{NAME};

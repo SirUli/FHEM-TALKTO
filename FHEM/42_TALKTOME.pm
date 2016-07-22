@@ -204,17 +204,18 @@ sub TALKTOME_helpers_fhem(@) {
 sub TALKTOME_helpers_perl(@) {
 	# A sub always gets the bot as first argument - we'll just remove that
 	shift(@_);
-	my $command = join(' ', @_);
-
+	my $perlcommand = shift(@_);
+	my @perlparameters = @_;
+	
 	# At this point, rivescript just calls a method but has no idea about fhem devices.
 	# Therefore to debug this function, you need to set the vorbosity level 5 on the "global" device
-	Log3 undef, 5, "TALKTOME: called function TALKTOME_helpers_perl with command: $command";
+	Log3 "TC_TALKTOME", 5, "TALKTOME: called function TALKTOME_helpers_perl with command: '$perlcommand " . join(' ', @perlparameters) . "'";
 
 	my $result = "If you see this text, then something went seriously wrong";
 	# Now we'll call the perl function and then give it's result back. As we do not trust the perl stuff
 	# some error handling is required. Source: https://stackoverflow.com/questions/10342875
 	eval {
-		$result = &{\&{$command}}();
+		$result = &{\&{$perlcommand}}(@perlparameters);
 	};
 	if (my $e = $@) {
 		$result = "Something went wrong: $e";
@@ -564,7 +565,7 @@ sub TALKTOME_DispatchToInterpreter($$$) {
         <code>attr &lt;name&gt; &lt;attribute&gt; [&lt;parameter&gt;]</code><br>
         <ul>
           <li><b>rsbrainfile</b> &nbsp;&nbsp;-&nbsp;&nbsp; Path to the Brainfile for rivescript. The default is being set upon Module definition and is in $attr{global}{modpath}/FHEM/TALKTOME.rive</li>
-		  <li><b>rsbraindir</b> &nbsp;&nbsp;-&nbsp;&nbsp; Path to a directory with Brainfiles for rivescript. The default path is $attr{global}{modpath}/FHEM/TALKTO</li>
+		  <li><b>rsbraindir</b> &nbsp;&nbsp;-&nbsp;&nbsp; Path to a directory with Brainfiles for rivescript. The default path is $attr{global}{modpath}/FHEM/TALKTO. Files in this directory MUST have the extension .rive or .rs to be loaded</li>
 		  <li><b>rsdebug</b> &nbsp;&nbsp;-&nbsp;&nbsp; Enables (1) or disables (0) the debug mode of rivescript. Attention: Can lead to a massive logfile which is defined in rsdebugfile</li>
 		  <li><b>rsdebugfile</b> &nbsp;&nbsp;-&nbsp;&nbsp; Path to the Debuglogfile for rivescript. The default is being set upon Module definition and is in $attr{global}{modpath}/log/TALKTOME.log</li>
 		  <li><b>rspunctuation</b> &nbsp;&nbsp;-&nbsp;&nbsp; This sets the characters which are seen as punctuation. This defaults to ".,!?;:¡¿". Example: You want to enable /Temperatures in Telegram. For this you would set ".,!?;:¡¿/" in this parameter so that Rivescript processes "Temperatures"

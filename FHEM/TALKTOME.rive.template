@@ -175,12 +175,12 @@
 ! local concat = newline
 
 + (@wetterfrage) [@wettertage]
-* <star1> == heute => Es werden heute Aussentemperaturen von <call>readingsval BK_Wetter fc0_low_c Error</call> - <call>readingsval BK_Wetter fc0_high_c Error</call> °C erwartet
-* <star1> == morgen => Es werden morgen Aussentemperaturen von <call>readingsval BK_Wetter fc1_low_c Error</call> - <call>readingsval BK_Wetter fc1_high_c Error</call> °C erwartet
-* <star1> == übermorgen => Es werden übermorgen Aussentemperaturen von <call>readingsval BK_Wetter fc2_low_c Error</call> - <call>readingsval BK_Wetter fc2_high_c Error</call> °C erwartet
+* <star1> == heute => Es werden heute Aussentemperaturen von <call>readingsval BK_Wetter fc1_low_c Error</call> - <call>readingsval BK_Wetter fc1_high_c Error</call> °C erwartet
+* <star1> == morgen => Es werden morgen Aussentemperaturen von <call>readingsval BK_Wetter fc2_low_c Error</call> - <call>readingsval BK_Wetter fc2_high_c Error</call> °C erwartet
+* <star1> == übermorgen => Es werden übermorgen Aussentemperaturen von <call>readingsval BK_Wetter fc3_low_c Error</call> - <call>readingsval BK_Wetter fc3_high_c Error</call> °C erwartet
 - Die Temperaturen der nächsten Tage:
-^ Heute: <call>readingsval BK_Wetter fc1_low_c Error</call> - <call>readingsval BK_Wetter fc3_high_c Error</call> °C
-^ Morgen: <call>readingsval BK_Wetter fc2_low_c Error</call> - <call>readingsval BK_Wetter fc3_high_c Error</call> °C
+^ Heute: <call>readingsval BK_Wetter fc1_low_c Error</call> - <call>readingsval BK_Wetter fc1_high_c Error</call> °C
+^ Morgen: <call>readingsval BK_Wetter fc2_low_c Error</call> - <call>readingsval BK_Wetter fc2_high_c Error</call> °C
 ^ Übermorgen: <call>readingsval BK_Wetter fc3_low_c Error</call> - <call>readingsval BK_Wetter fc3_high_c Error</call> °C
 
 // Switch to concatenation with nothing

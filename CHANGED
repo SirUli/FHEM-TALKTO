@@ -1,4 +1,8 @@
 FHEM TALKTOME AND TALKTOUSER last changes:
+2016-07-22
+- Added possibility to have parameters for perl methods (thank you Cori)
+- Changed handling of the "@" before the device name which is now added before handing over to Rivescript instead of afterwards. Enables to prepend the devicename with "audio " to send as audio.
+
 2016-07-06
  - Added possibility to load a complete directory with rivescript files (ending .rs or .rive) through attribute rsbraindir
  - Fixed logging of helper functions
